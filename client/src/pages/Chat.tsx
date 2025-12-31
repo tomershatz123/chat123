@@ -92,15 +92,18 @@ const Chat = () => {
             </div>
             
             <div className="user-list">
-                {users.map((u: User) => (
-                <div 
-                    key={u.id} 
-                    onClick={() => setSelectedUser(u)} 
-                    className={`user-item ${selectedUser?.id === u.id ? 'active' : ''}`}
-                >
-                    <div className="user-name">{u.name}</div>
-                    <div className="user-email">{u.email}</div>
-                </div>
+                {users.
+                  filter((u: User) => u.id !== Number(myId))
+                  .sort((a, b) => a.name.localeCompare(b.name)) // Adds alphabetical sorting
+                  .map((u: User) => (
+                    <div 
+                        key={u.id} 
+                        onClick={() => setSelectedUser(u)} 
+                        className={`user-item ${selectedUser?.id === u.id ? 'active' : ''}`}
+                    >
+                        <div className="user-name">{u.name}</div>
+                        <div className="user-email">{u.email}</div>
+                    </div>
                 ))}
             </div>
             <div style={{ padding: '20px', borderTop: '1px solid #34495e' }}>
