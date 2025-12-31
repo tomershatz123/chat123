@@ -151,3 +151,20 @@
     justify-content: center;
     color: #95a5a6;
 }
+
+.logout-button {
+    width: 100%;           /* Removed quotes */
+    padding: 8px;
+    background-color: #e74c3c;
+    color: white; 
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;      /* Added for a better look */
+    margin-top: 10px;       /* Gives it some breathing room */
+    transition: background 0.2s;
+}
+
+.logout-button:hover {
+    background-color: #c0392b; /* Darker red on hover */
+}

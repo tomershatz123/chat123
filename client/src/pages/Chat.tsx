@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { socket } from '../socket';
+import { useNavigate } from 'react-router-dom';
 import './Chat.css';
 
 interface User {
@@ -23,6 +24,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   
   const myId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
@@ -75,25 +77,39 @@ const Chat = () => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    socket.disconnect();
+    navigate('/login');
+  };
+
   return (
     <div className="chat-container">
         <div className="sidebar">
-        <div className="sidebar-header">
-            <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Messages</h2>
-        </div>
-        
-        <div className="user-list">
-            {users.map((u: User) => (
-            <div 
-                key={u.id} 
-                onClick={() => setSelectedUser(u)} 
-                className={`user-item ${selectedUser?.id === u.id ? 'active' : ''}`}
-            >
-                <div className="user-name">{u.name}</div>
-                <div className="user-email">{u.email}</div>
+            <div className="sidebar-header">
+                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Messages</h2>
             </div>
-            ))}
-        </div>
+            
+            <div className="user-list">
+                {users.map((u: User) => (
+                <div 
+                    key={u.id} 
+                    onClick={() => setSelectedUser(u)} 
+                    className={`user-item ${selectedUser?.id === u.id ? 'active' : ''}`}
+                >
+                    <div className="user-name">{u.name}</div>
+                    <div className="user-email">{u.email}</div>
+                </div>
+                ))}
+            </div>
+            <div style={{ padding: '20px', borderTop: '1px solid #34495e' }}>
+                <button 
+                    onClick={handleLogout}
+                    className="logout-button">
+                    Logout
+                </button>
+            </div>
         </div>
 
         <div className="chat-main">
