@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { socket } from '../socket';
+import './Chat.css';
 
 interface User {
   id: number;
@@ -75,39 +76,69 @@ const Chat = () => {
   }, [messages]);
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      {/* Sidebar */}
-      <div style={{ width: '200px', borderRight: '1px solid #ccc' }}>
-        <h3>Contacts</h3>
-        {users.map((u: any) => (
-          <div key={u.id} onClick={() => setSelectedUser(u)} style={{ cursor: 'pointer', padding: '10px', background: selectedUser?.id === u.id ? '#eee' : 'none' }}>
-            {u.name}
-          </div>
-        ))}
-      </div>
-
-      {/* Chat Area */}
-      <div style={{ flex: 1, padding: '20px' }}>
-        {selectedUser ? (
-          <>
-            <h3>Chat with {selectedUser.name}</h3>
-            <div style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ddd', marginBottom: '10px' }}>
-              {messages.map((m: any, i) => (
-                <div key={i} style={{ textAlign: m.senderId === Number(myId) ? 'right' : 'left' }}>
-                  <p style={{ display: 'inline-block', padding: '5px 10px', borderRadius: '10px', background: m.senderId === Number(myId) ? '#007bff' : '#eee', color: m.senderId === Number(myId) ? 'white' : 'black' }}>
-                    {m.text}
-                  </p>
-                </div>
-              ))}
-              <div ref={scrollRef} />
+    <div className="chat-container">
+        <div className="sidebar">
+        <div className="sidebar-header">
+            <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Messages</h2>
+        </div>
+        
+        <div className="user-list">
+            {users.map((u: User) => (
+            <div 
+                key={u.id} 
+                onClick={() => setSelectedUser(u)} 
+                className={`user-item ${selectedUser?.id === u.id ? 'active' : ''}`}
+            >
+                <div className="user-name">{u.name}</div>
+                <div className="user-email">{u.email}</div>
             </div>
-            <input value={newMessage} onChange={e => setNewMessage(e.target.value)} />
-            <button onClick={sendMessage}>Send</button>
-          </>
-        ) : <p>Select a user to start chatting</p>}
-      </div>
+            ))}
+        </div>
+        </div>
+
+        <div className="chat-main">
+        {selectedUser ? (
+            <>
+            <div className="chat-header">
+                <div className="avatar">{selectedUser.name[0]}</div>
+                <h3 style={{ margin: 0 }}>{selectedUser.name}</h3>
+            </div>
+
+            <div className="messages-list">
+                {messages.map((m, i) => {
+                const isMe = m.senderId === Number(myId);
+                return (
+                    <div key={i} className={`message-wrapper ${isMe ? 'message-me' : 'message-them'}`}>
+                    {m.text}
+                    </div>
+                );
+                })}
+                <div ref={scrollRef} />
+            </div>
+
+            <div className="input-area">
+                <div className="input-container">
+                <input 
+                    className="chat-input"
+                    value={newMessage} 
+                    onChange={e => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder="Type a message..."
+                />
+                <button className="send-button" onClick={sendMessage}>
+                    Send
+                </button>
+                </div>
+            </div>
+            </>
+        ) : (
+            <div className="empty-chat">
+            <h3>Select a contact to start chatting</h3>
+            </div>
+        )}
+        </div>
     </div>
-  );
-};
+    );
+}
 
 export default Chat;

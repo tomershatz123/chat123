@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../socket';
+import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -30,13 +31,35 @@ const Login = () => {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} /><br/>
-        <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} /><br/>
-        <button type="submit">Enter Chat</button>
-      </form>
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Welcome Back</h2>
+        <p>Please enter your details to sign in</p>
+        
+        <form className="login-form" onSubmit={handleSubmit}>
+          <input 
+            className="login-input"
+            type="email" 
+            placeholder="Email Address" 
+            required
+            onChange={e => setEmail(e.target.value)} 
+          />
+          <input 
+            className="login-input"
+            type="password" 
+            placeholder="Password" 
+            required
+            onChange={e => setPassword(e.target.value)} 
+          />
+          <button className="login-button" type="submit">
+            Sign In
+          </button>
+        </form>
+
+        <div className="register-link">
+          Don't have an account? <span>Sign Up</span>
+        </div>
+      </div>
     </div>
   );
 };
