@@ -40,7 +40,15 @@ io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} joined room: ${room}`);
   });
 
-  // We will add more logic here soon!
+  socket.on("typing", ({ senderId, receiverId }) => {
+    // Tell the receiver that this specific sender is typing
+    socket.to(String(receiverId)).emit("user_typing", { senderId });
+  });
+
+  socket.on("stop_typing", ({ senderId, receiverId }) => {
+    // Tell the receiver to hide the "typing" indicator
+    socket.to(String(receiverId)).emit("user_stop_typing", { senderId });
+  });
 
   socket.on("disconnect", () => {
     console.log("User disconnected");

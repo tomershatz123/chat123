@@ -23,7 +23,9 @@ const Chat = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   
   const myId = localStorage.getItem('userId');
@@ -60,6 +62,25 @@ const Chat = () => {
     }
     }, [selectedUser]);
 
+  useEffect(() => {
+    socket.on("user_typing", ({ senderId }) => {
+      if (senderId === selectedUser?.id) {
+        setIsOtherUserTyping(true);
+      }
+    });
+
+    socket.on("user_stop_typing", ({ senderId }) => {
+      if (senderId === selectedUser?.id) {
+        setIsOtherUserTyping(false);
+      }
+    });
+
+    return () => {
+      socket.off("user_typing");
+      socket.off("user_stop_typing");
+    };
+  }, [selectedUser]); 
+
   const sendMessage = async () => {
     if (!newMessage || !selectedUser) return;
 
@@ -76,6 +97,30 @@ const Chat = () => {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+
+    // 1. Tell the server we are typing
+    socket.emit("typing", { 
+      senderId: Number(myId), 
+      receiverId: selectedUser?.id 
+    });
+
+    // 2. Clear the previous timer if it exists
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // 3. Start a new timer. If the user doesn't type for 1.5 seconds, send 'stop_typing'
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stop_typing", { 
+        senderId: Number(myId), 
+        receiverId: selectedUser?.id 
+      });
+    }, 1500);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -135,14 +180,19 @@ const Chat = () => {
                 <div ref={scrollRef} />
             </div>
 
+            {isOtherUserTyping && (
+              <div style={{ padding: '0 20px', fontSize: '0.8rem', color: '#7f8c8d', fontStyle: 'italic' }}>
+                {selectedUser?.name} is typing...
+              </div>
+            )}
             <div className="input-area">
                 <div className="input-container">
                 <input 
-                    className="chat-input"
-                    value={newMessage} 
-                    onChange={e => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                    placeholder="Type a message..."
+                  className="chat-input"
+                  value={newMessage} 
+                  onChange={handleInputChange} 
+                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                  placeholder="Type a message..."
                 />
                 <button className="send-button" onClick={sendMessage}>
                     Send
