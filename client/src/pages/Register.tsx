@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { socket } from '../socket';
-import { Link } from 'react-router-dom';
-import './Login.css';
+import { useNavigate, Link } from 'react-router-dom';
+import './Login.css'; // Reuse the same CSS for consistency
 
-const Login = () => {
+const Register = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -13,31 +12,36 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', { email, password });
-      const { token, user } = response.data;
-
-      // 1. Store data
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', user.id.toString());
-
-      // 2. Setup Socket
-      socket.connect();
-      socket.emit("join", user.id);
-
-      // 3. Go to chat
-      navigate('/chat');
-    } catch (err) {
-      alert("Login failed! Check your credentials.");
+      // 1. Send registration data to your backend
+      await axios.post('http://localhost:5001/api/auth/register', { 
+        name, 
+        email, 
+        password 
+      });
+      
+      alert("Registration successful! Please login.");
+      
+      // 2. Redirect to login page
+      navigate('/login');
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Registration failed.");
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2>Welcome Back</h2>
-        <p>Please enter your details to sign in</p>
+        <h2>Create Account</h2>
+        <p>Join the conversation today</p>
         
         <form className="login-form" onSubmit={handleSubmit}>
+          <input 
+            className="login-input"
+            type="text" 
+            placeholder="Full Name" 
+            required
+            onChange={e => setName(e.target.value)} 
+          />
           <input 
             className="login-input"
             type="email" 
@@ -53,16 +57,16 @@ const Login = () => {
             onChange={e => setPassword(e.target.value)} 
           />
           <button className="login-button" type="submit">
-            Sign In
+            Sign Up
           </button>
         </form>
 
         <div className="register-link">
-          Don't have an account? <Link to="/register"><span>Sign Up</span></Link>
+          Already have an account? <Link to="/login"><span>Sign In</span></Link>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Register;
